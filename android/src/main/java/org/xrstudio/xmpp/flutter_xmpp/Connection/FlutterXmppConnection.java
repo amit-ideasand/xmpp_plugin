@@ -514,8 +514,11 @@ public class FlutterXmppConnection implements ConnectionListener {
             mConnection.addConnectionListener(this);
             Utils.printLog(" Calling connect(): ");
             mConnection.connect();
+            Utils.printLog("1 amit");
             rosterConnection = Roster.getInstanceFor(mConnection);
+            Utils.printLog("2 amit");
             rosterConnection.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
+            Utils.printLog("3 amit");
             if (mUseStreamManagement) {
                 mConnection.setUseStreamManagement(true);
                 mConnection.setUseStreamManagementResumption(true);
@@ -537,6 +540,8 @@ public class FlutterXmppConnection implements ConnectionListener {
             }
         } catch (InterruptedException e) {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
+            Utils.printLog(" Amit Calling 123456 " +e );
+            Utils.printLog(" Amit Calling 123456 " +e.toString() );
             e.printStackTrace();
         }
     }

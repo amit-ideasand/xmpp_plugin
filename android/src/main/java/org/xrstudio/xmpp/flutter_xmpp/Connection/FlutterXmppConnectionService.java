@@ -75,8 +75,9 @@ public class FlutterXmppConnectionService extends Service {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
             Utils.broadcastConnectionMessageToFlutter(this, ConnectionState.FAILED, "Something went wrong while connecting ,make sure the credentials are right and try again.");
             Utils.printLog(" Something went wrong while connecting ,make sure the credentials are right and try again: ");
-            e.printStackTrace();
             Utils.printLog(" Hello Amit");
+            e.printStackTrace();
+            Utils.printLog(" Hello Amit again");
 
 //            stopSelf();
         }

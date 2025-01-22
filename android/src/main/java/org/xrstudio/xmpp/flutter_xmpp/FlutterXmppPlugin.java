@@ -72,7 +72,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         connectionBuild.put(Constants.STATUS, Constants.connected);
 
                         Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + connectionBuild.toString());
-
+                        Log.d("TAG", " AUTH_MESSAGE-->> " + connectionBuild.toString());
                         events.success(connectionBuild);
                         break;
 
@@ -84,7 +84,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         authBuild.put(Constants.STATUS, Constants.authenticated);
 
                         Utils.addLogInStorage("Action: sentMessageToFlutter, Content: " + authBuild.toString());
-
+                        Log.d("TAG", " AUTH_MESSAGE-->> " + authBuild.toString());
                         events.success(authBuild);
                         break;
 
@@ -135,7 +135,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         buildTo.put(Constants.TO, to);
                         buildTo.put(Constants.BODY, bodyTo);
                         buildTo.put(Constants.MSG_TYPE, typeTo);
-
+                        Log.d("TAG", " OUTGOING_MESSAGE-->> " + build.toString());
                         events.success(buildTo);
 
                         break;
@@ -155,7 +155,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         presenceBuild.put(Constants.PRESENCE_MODE, presenceMode);
 
                         Utils.printLog("presenceBuild: " + presenceBuild);
-
+                        Log.d("TAG", " PRESENCE_MESSAGE-->> " + presenceBuild.toString());
                         events.success(presenceBuild);
                         break;
 

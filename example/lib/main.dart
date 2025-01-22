@@ -70,6 +70,9 @@ class _MyAppState extends State<MyApp>
       case AppLifecycleState.resumed:
         log('resumed detachedCallBack()');
         break;
+      case AppLifecycleState.hidden:
+        // TODO: Handle this case.
+        break;
     }
   }
 

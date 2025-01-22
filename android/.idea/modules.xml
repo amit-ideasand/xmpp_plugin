@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter_xmpp.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter_xmpp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter_xmpp.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter_xmpp.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter_xmpp.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter_xmpp.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter_xmpp.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter_xmpp.unitTest.iml" />
     </modules>
   </component>
 </project>

@@ -2,6 +2,9 @@ group 'org.xrstudio.xmpp'
 version '1.0'
 
 buildscript {
+    ext {
+        kotlin_version = '1.9.24'
+    }
     repositories {
         google()
         mavenCentral()
@@ -10,6 +13,7 @@ buildscript {
     dependencies {
         // classpath 'com.android.tools.build:gradle:3.6.4'
         classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
@@ -21,6 +25,7 @@ rootProject.allprojects {
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     namespace 'org.xrstudio.xmpp'
@@ -28,6 +33,9 @@ android {
         compileSdk 33
         minSdkVersion 16
         multiDexEnabled true
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
 }
 
@@ -55,4 +63,5 @@ dependencies {
     implementation 'com.amazonaws:aws-android-sdk-s3:2.73.0'
     implementation 'com.amazonaws:aws-android-sdk-ddb:2.73.0'
     implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.core:core-ktx:1.15.0'
 }

@@ -1,5 +1,6 @@
 package org.xrstudio.flutter_xmpp
 
+import android.os.Build
 import androidx.annotation.NonNull
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -23,7 +24,7 @@ class FlutterXmppPlugin: FlutterPlugin, MethodCallHandler {
 
   override fun onMethodCall(call: MethodCall, result: Result) {
     if (call.method == "getPlatformVersion") {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
+      result.success("Android ${Build.VERSION.RELEASE}")
     } else {
       result.notImplemented()
     }

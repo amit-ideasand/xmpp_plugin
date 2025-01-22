@@ -4,9 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-
+import android.os.Build;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
-
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.ReconnectionManager;
@@ -473,30 +473,23 @@ public class FlutterXmppConnection implements ConnectionListener {
         FlutterXmppConnectionService.sConnectionState = ConnectionState.CONNECTING;
         XMPPTCPConnectionConfiguration.Builder conf = XMPPTCPConnectionConfiguration.builder();
         conf.setXmppDomain(mServiceName);
-
         // Check if the Host address is the ip then set up host and host address.
         if (Utils.validIP(mHost)) {
-
             Utils.printLog(" connecting via ip: " + Utils.validIP(mHost));
             InetAddress address = InetAddress.getByName(mHost);
             conf.setHostAddress(address);
             conf.setHost(mHost);
         } else {
-
             Utils.printLog(" not valid host: ");
             conf.setHost(mHost);
         }
-
         if (Constants.PORT_NUMBER != 0) {
             conf.setPort(Constants.PORT_NUMBER);
         }
-
         conf.setUsernameAndPassword(mUsername, mPassword);
         conf.setResource(mResource);
         conf.setCompressionEnabled(true);
         conf.enableDefaultDebugger();
-
-
         if (mRequireSSLConnection) {
             SSLContext context = null;
             try {
@@ -516,30 +509,21 @@ public class FlutterXmppConnection implements ConnectionListener {
 
         Utils.printLog(" connect 1 mServiceName: " + mServiceName + " mHost: " + mHost + " mPort: " + Constants.PORT + " mUsername: " + mUsername + " mPassword: " + mPassword + " mResource:" + mResource);
         //Set up the ui thread broadcast message receiver.
-
-
         try {
-
             mConnection = new XMPPTCPConnection(conf.build());
             mConnection.addConnectionListener(this);
-
-
-
             Utils.printLog(" Calling connect(): ");
             mConnection.connect();
-
             rosterConnection = Roster.getInstanceFor(mConnection);
             rosterConnection.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
-
             if (mUseStreamManagement) {
                 mConnection.setUseStreamManagement(true);
                 mConnection.setUseStreamManagementResumption(true);
             }
-
             mConnection.login();
-
-            setupUiThreadBroadCastMessageReceiver();
-
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                setupUiThreadBroadCastMessageReceiver();
+            }
             mConnection.addSyncStanzaListener(new PresenceListenerAndFilter(mApplicationContext), StanzaTypeFilter.PRESENCE);
 
             mConnection.addStanzaAcknowledgedListener(new StanzaAckListener(mApplicationContext));
@@ -551,15 +535,13 @@ public class FlutterXmppConnection implements ConnectionListener {
                 ReconnectionManager.setEnabledPerDefault(true);
                 reconnectionManager.enableAutomaticReconnection();
             }
-
-
         } catch (InterruptedException e) {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
             e.printStackTrace();
         }
-
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void setupUiThreadBroadCastMessageReceiver() {
 
         uiThreadMessageReceiver = new BroadcastReceiver() {
@@ -569,6 +551,7 @@ public class FlutterXmppConnection implements ConnectionListener {
                 //Check if the Intents purpose is to send the message.
                 String action = intent.getAction();
                 Utils.printLog(" action: " + action);
+                assert action != null;
                 if (action.equals(Constants.X_SEND_MESSAGE)
                         || action.equals(Constants.GROUP_SEND_MESSAGE)) {
                     //Send the message.
@@ -586,7 +569,9 @@ public class FlutterXmppConnection implements ConnectionListener {
         filter.addAction(Constants.X_SEND_MESSAGE);
         filter.addAction(Constants.READ_MESSAGE);
         filter.addAction(Constants.GROUP_SEND_MESSAGE);
-        mApplicationContext.registerReceiver(uiThreadMessageReceiver, filter, Context.RECEIVER_EXPORTED);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mApplicationContext.registerReceiver(uiThreadMessageReceiver, filter, Context.RECEIVER_EXPORTED);
+        }
 
     }
 

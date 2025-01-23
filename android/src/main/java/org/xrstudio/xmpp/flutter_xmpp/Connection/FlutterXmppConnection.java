@@ -74,8 +74,7 @@ public class FlutterXmppConnection implements ConnectionListener {
     private static Context mApplicationContext;
     private BroadcastReceiver uiThreadMessageReceiver;//Receives messages from the ui thread.
 
-    public FlutterXmppConnection(Context context, String jid_user, String password, String host, Integer port, boolean requireSSLConnection,
-                                 boolean autoDeliveryReceipt, boolean useStreamManagement, boolean automaticReconnection) {
+    public FlutterXmppConnection(Context context, String jid_user, String password, String host, Integer port) {
 
         Utils.printLog(" Connection Constructor called: ");
 
@@ -83,10 +82,6 @@ public class FlutterXmppConnection implements ConnectionListener {
         mPassword = password;
         Constants.PORT_NUMBER = port;
         mHost = host;
-        mRequireSSLConnection = requireSSLConnection;
-        mAutoDeliveryReceipt = autoDeliveryReceipt;
-        mUseStreamManagement = useStreamManagement;
-        mAutomaticReconnection = automaticReconnection;
         if (jid_user != null && jid_user.contains(Constants.SYMBOL_COMPARE_JID)) {
             String[] jid_list = jid_user.split(Constants.SYMBOL_COMPARE_JID);
             mUsername = jid_list[0];

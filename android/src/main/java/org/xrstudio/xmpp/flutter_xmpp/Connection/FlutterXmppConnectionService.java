@@ -66,9 +66,10 @@ public class FlutterXmppConnectionService extends Service {
             Utils.printLog(" initConnection(): ");
 
             if (mConnection == null) {
-                mConnection = new FlutterXmppConnection(this, this.jid_user, this.password, this.host, this.port, requireSSLConnection, autoDeliveryReceipt, useStreamManagement, automaticReconnection);
+                mConnection = new FlutterXmppConnection(this, this.jid_user, this.password, this.host, this.port);
+                Utils.printLog("in if condition");
             }
-
+            Utils.printLog("running here");
             mConnection.connect();
 
         } catch (IOException | SmackException | XMPPException e) {

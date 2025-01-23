@@ -472,21 +472,21 @@ public class      FlutterXmppConnection implements ConnectionListener {
     public void connect() throws IOException, XMPPException, SmackException {
         FlutterXmppConnectionService.sConnectionState = ConnectionState.CONNECTING;
 
-        // Initialize SSLContext with a TrustManager that accepts all certificates
+        // Set up SSLContext
         SSLContext context = null;
         try {
-            context = SSLContext.getInstance(Constants.TLS);
+            context = SSLContext.getInstance("TLS");
             context.init(null, new TrustManager[]{new TLSUtils.AcceptAllTrustManager()}, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
         }
 
-        // Build the connection configuration
+        // Build connection configuration
         XMPPTCPConnectionConfiguration.Builder confBuilder = XMPPTCPConnectionConfiguration.builder()
                 .setXmppDomain(mServiceName)
-                .setHost(Constants.DOMAIN_NAME)
-                .setCustomSSLContext(context) // Use custom SSLContext
-                .setKeystoreType(null)        // Prevent Keystore exceptions
+                .setHost(mHost) // Use mHost here
+                .setCustomSSLContext(context)
+                .setKeystoreType(null)
                 .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
                 .setCompressionEnabled(true)
                 .setResource(mResource)
@@ -496,52 +496,25 @@ public class      FlutterXmppConnection implements ConnectionListener {
             confBuilder.setPort(Constants.PORT_NUMBER);
         }
 
-        // Handle custom host IP address
-//        if (Utils.validIP(mHost)) {
-            InetAddress address = InetAddress.getByName(mHost);
-            confBuilder.setHostAddress(address);
-            confBuilder.setHost(mHost);
-//        }
-
-        confBuilder.enableDefaultDebugger();
-
-        // Apply connection settings
         try {
             mConnection = new XMPPTCPConnection(confBuilder.build());
             mConnection.addConnectionListener(this);
-
-            // Log connection attempt details
             Utils.printLog("Connecting to: " + mServiceName + " via host: " + mHost);
 
-            // Attempt to connect
-             mConnection.connect();
+            // Connect and login
+            mConnection.connect();
+            mConnection.login();
 
             if (mUseStreamManagement) {
                 mConnection.setUseStreamManagement(true);
                 mConnection.setUseStreamManagementResumption(true);
             }
 
-            // Log in to the XMPP server
-            mConnection.login();
-
-            // Additional configurations after successful connection
-            rosterConnection = Roster.getInstanceFor(mConnection);
-            rosterConnection.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
-
+            // Set up additional listeners and reconnection
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 setupUiThreadBroadCastMessageReceiver();
             }
-
-            // Add listeners for presence, messages, and stanza acknowledgments
-            mConnection.addSyncStanzaListener(new PresenceListenerAndFilter(mApplicationContext), StanzaTypeFilter.PRESENCE);
-            mConnection.addStanzaAcknowledgedListener(new StanzaAckListener(mApplicationContext));
-            mConnection.addSyncStanzaListener(new MessageListener(mApplicationContext), StanzaTypeFilter.MESSAGE);
-
-            if (mAutomaticReconnection) {
-                ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(mConnection);
-                ReconnectionManager.setEnabledPerDefault(true);
-                reconnectionManager.enableAutomaticReconnection();
-            }
+            ReconnectionManager.getInstanceFor(mConnection).enableAutomaticReconnection();
 
         } catch (InterruptedException e) {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;

@@ -514,7 +514,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             Utils.printLog("Connecting to: " + mServiceName + " via host: " + mHost);
 
             // Attempt to connect
-            mConnection.connect();
+             mConnection.connect();
 
             if (mUseStreamManagement) {
                 mConnection.setUseStreamManagement(true);

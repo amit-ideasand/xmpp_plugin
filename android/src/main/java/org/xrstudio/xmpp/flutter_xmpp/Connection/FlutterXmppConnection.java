@@ -494,7 +494,7 @@ public class FlutterXmppConnection implements ConnectionListener {
             SSLContext context = null;
             try {
                 context = SSLContext.getInstance(Constants.TLS);
-                context.init(null, new TrustManager[]{new TLSUtils.AcceptAllTrustManager()}, new SecureRandom());
+                context.init(null, new TrustManager[]{new TLSUtils.acceptAllCertificates()}, new SecureRandom());
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (KeyManagementException e) {

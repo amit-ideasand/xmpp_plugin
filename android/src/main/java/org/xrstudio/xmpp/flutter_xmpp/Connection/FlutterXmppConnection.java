@@ -471,66 +471,70 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     public void connect() throws IOException, XMPPException, SmackException {
         FlutterXmppConnectionService.sConnectionState = ConnectionState.CONNECTING;
-        XMPPTCPConnectionConfiguration.Builder conf = XMPPTCPConnectionConfiguration.builder();
-        conf.setXmppDomain(mServiceName);
-        // Check if the Host address is the ip then set up host and host address.
-        if (Utils.validIP(mHost)) {
-            Utils.printLog(" connecting via ip: " + Utils.validIP(mHost));
-            InetAddress address = InetAddress.getByName(mHost);
-            conf.setHostAddress(address);
-            conf.setHost(mHost);
-        } else {
-            Utils.printLog(" not valid host: ");
-            conf.setHost(mHost);
-        }
-        if (Constants.PORT_NUMBER != 0) {
-            conf.setPort(Constants.PORT_NUMBER);
-        }
-        conf.setUsernameAndPassword(mUsername, mPassword);
-        conf.setResource(mResource);
-        conf.setCompressionEnabled(true);
-        conf.enableDefaultDebugger();
-        if (mRequireSSLConnection) {
-            SSLContext context = null;
-            try {
-                context = SSLContext.getInstance(Constants.TLS);
-                context.init(null, new TrustManager[]{new TLSUtils.acceptAllCertificates()}, new SecureRandom());
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (KeyManagementException e) {
-                e.printStackTrace();
-            }
-            conf.setCustomSSLContext(context);
-            conf.setKeystoreType(null);
-            conf.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
-        } else {
-            conf.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
+
+        // Initialize SSLContext with a TrustManager that accepts all certificates
+        SSLContext context = null;
+        try {
+            context = SSLContext.getInstance(Constants.TLS);
+            context.init(null, new TrustManager[]{new TLSUtils.AcceptAllTrustManager()}, new SecureRandom());
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            e.printStackTrace();
         }
 
-        Utils.printLog(" connect 1 mServiceName: " + mServiceName + " mHost: " + mHost + " mPort: " + Constants.PORT + " mUsername: " + mUsername + " mPassword: " + mPassword + " mResource:" + mResource);
-        //Set up the ui thread broadcast message receiver.
+        // Build the connection configuration
+        XMPPTCPConnectionConfiguration.Builder confBuilder = XMPPTCPConnectionConfiguration.builder()
+                .setXmppDomain(mServiceName)
+                .setHost(Constants.DOMAIN_NAME)
+                .setCustomSSLContext(context) // Use custom SSLContext
+                .setKeystoreType(null)        // Prevent Keystore exceptions
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
+                .setCompressionEnabled(true)
+                .setResource(mResource)
+                .setUsernameAndPassword(mUsername, mPassword);
+
+        if (Constants.PORT_NUMBER != 0) {
+            confBuilder.setPort(Constants.PORT_NUMBER);
+        }
+
+        // Handle custom host IP address
+//        if (Utils.validIP(mHost)) {
+            InetAddress address = InetAddress.getByName(mHost);
+            confBuilder.setHostAddress(address);
+            confBuilder.setHost(mHost);
+//        }
+
+        confBuilder.enableDefaultDebugger();
+
+        // Apply connection settings
         try {
-            mConnection = new XMPPTCPConnection(conf.build());
+            mConnection = new XMPPTCPConnection(confBuilder.build());
             mConnection.addConnectionListener(this);
-            Utils.printLog(" Calling connect(): ");
+
+            // Log connection attempt details
+            Utils.printLog("Connecting to: " + mServiceName + " via host: " + mHost);
+
+            // Attempt to connect
             mConnection.connect();
-            Utils.printLog("1 amit");
-            rosterConnection = Roster.getInstanceFor(mConnection);
-            Utils.printLog("2 amit");
-            rosterConnection.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
-            Utils.printLog("3 amit");
+
             if (mUseStreamManagement) {
                 mConnection.setUseStreamManagement(true);
                 mConnection.setUseStreamManagementResumption(true);
             }
+
+            // Log in to the XMPP server
             mConnection.login();
+
+            // Additional configurations after successful connection
+            rosterConnection = Roster.getInstanceFor(mConnection);
+            rosterConnection.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 setupUiThreadBroadCastMessageReceiver();
             }
+
+            // Add listeners for presence, messages, and stanza acknowledgments
             mConnection.addSyncStanzaListener(new PresenceListenerAndFilter(mApplicationContext), StanzaTypeFilter.PRESENCE);
-
             mConnection.addStanzaAcknowledgedListener(new StanzaAckListener(mApplicationContext));
-
             mConnection.addSyncStanzaListener(new MessageListener(mApplicationContext), StanzaTypeFilter.MESSAGE);
 
             if (mAutomaticReconnection) {
@@ -538,10 +542,10 @@ public class FlutterXmppConnection implements ConnectionListener {
                 ReconnectionManager.setEnabledPerDefault(true);
                 reconnectionManager.enableAutomaticReconnection();
             }
+
         } catch (InterruptedException e) {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
-            Utils.printLog(" Amit Calling 123456 " +e );
-            Utils.printLog(" Amit Calling 123456 " +e.toString() );
+            Utils.printLog("Connection failed: " + e.toString());
             e.printStackTrace();
         }
     }

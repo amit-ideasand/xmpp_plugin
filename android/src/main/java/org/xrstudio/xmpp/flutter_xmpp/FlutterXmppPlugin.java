@@ -452,29 +452,29 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 jid_user = call.argument(Constants.USER_JID).toString();
                 password = call.argument(Constants.PASSWORD).toString();
                 host = call.argument(Constants.HOST).toString();
-//                if (call.hasArgument(Constants.PORT)) {
-//                    Constants.PORT_NUMBER = Integer.parseInt(call.argument(Constants.PORT).toString());
-//                }
+                if (call.hasArgument(Constants.PORT)) {
+                    Constants.PORT_NUMBER = Integer.parseInt(call.argument(Constants.PORT).toString());
+                }
 
-//                if (call.hasArgument(Constants.NAVIGATE_FILE_PATH)) {
-//                    Utils.logFilePath = call.argument(Constants.NAVIGATE_FILE_PATH).toString();
-//                }
+                if (call.hasArgument(Constants.NAVIGATE_FILE_PATH)) {
+                    Utils.logFilePath = call.argument(Constants.NAVIGATE_FILE_PATH).toString();
+                }
 
-//                if (call.hasArgument(Constants.AUTO_DELIVERY_RECEIPT)) {
-//                    autoDeliveryReceipt = call.argument(Constants.AUTO_DELIVERY_RECEIPT);
-//                }
+                if (call.hasArgument(Constants.AUTO_DELIVERY_RECEIPT)) {
+                    autoDeliveryReceipt = call.argument(Constants.AUTO_DELIVERY_RECEIPT);
+                }
 
-//                if (call.hasArgument(Constants.REQUIRE_SSL_CONNECTION)) {
-//                    requireSSLConnection = call.argument(Constants.REQUIRE_SSL_CONNECTION);
-//                }
+                if (call.hasArgument(Constants.REQUIRE_SSL_CONNECTION)) {
+                    requireSSLConnection = call.argument(Constants.REQUIRE_SSL_CONNECTION);
+                }
 
-//                if (call.hasArgument(Constants.AUTOMATIC_RECONNECTION)) {
-//                    automaticReconnection = call.argument(Constants.AUTOMATIC_RECONNECTION);
-//                }
+                if (call.hasArgument(Constants.AUTOMATIC_RECONNECTION)) {
+                    automaticReconnection = call.argument(Constants.AUTOMATIC_RECONNECTION);
+                }
 
-//                if (call.hasArgument(Constants.USER_STREAM_MANAGEMENT)) {
-//                    useStreamManagement = call.argument(Constants.USER_STREAM_MANAGEMENT);
-//                }
+                if (call.hasArgument(Constants.USER_STREAM_MANAGEMENT)) {
+                    useStreamManagement = call.argument(Constants.USER_STREAM_MANAGEMENT);
+                }
 
                 // Start authentication.
                 doLogin();
@@ -780,10 +780,10 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
             i.putExtra(Constants.PASSWORD, password);
             i.putExtra(Constants.HOST, host);
             i.putExtra(Constants.PORT, Constants.PORT_NUMBER);
-//            i.putExtra(Constants.AUTO_DELIVERY_RECEIPT, autoDeliveryReceipt);
-//            i.putExtra(Constants.REQUIRE_SSL_CONNECTION, requireSSLConnection);
-//            i.putExtra(Constants.USER_STREAM_MANAGEMENT, useStreamManagement);
-//            i.putExtra(Constants.AUTOMATIC_RECONNECTION, automaticReconnection);
+            i.putExtra(Constants.AUTO_DELIVERY_RECEIPT, autoDeliveryReceipt);
+            i.putExtra(Constants.REQUIRE_SSL_CONNECTION, requireSSLConnection);
+            i.putExtra(Constants.USER_STREAM_MANAGEMENT, useStreamManagement);
+            i.putExtra(Constants.AUTOMATIC_RECONNECTION, automaticReconnection);
             activity.startService(i);
         }
     }

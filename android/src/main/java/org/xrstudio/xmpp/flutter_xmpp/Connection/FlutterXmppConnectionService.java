@@ -66,26 +66,17 @@ public class FlutterXmppConnectionService extends Service {
             Utils.printLog(" initConnection(): ");
 
             if (mConnection == null) {
-                Utils.printLog("before if condition");
-                mConnection = new FlutterXmppConnection(this, this.jid_user, this.password, this.host, this.port);
-                Utils.printLog("in if condition");
-            }
-            else {
-                Utils.printLog("no connection found");
+                mConnection = new FlutterXmppConnection(this, this.jid_user, this.password, this.host, this.port, requireSSLConnection, autoDeliveryReceipt, useStreamManagement, automaticReconnection);
             }
 
-            Utils.printLog("running here");
             mConnection.connect();
 
         } catch (IOException | SmackException | XMPPException e) {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
             Utils.broadcastConnectionMessageToFlutter(this, ConnectionState.FAILED, "Something went wrong while connecting ,make sure the credentials are right and try again.");
-            Utils.printLog("1 Something went wrong while connecting ,make sure the credentials are right and try again: ");
-            Utils.printLog(" Hello Amit");
+            Utils.printLog(" Something went wrong while connecting ,make sure the credentials are right and try again: ");
             e.printStackTrace();
-            Utils.printLog(" Hello Amit again");
-
-//            stopSelf();
+            stopSelf();
         }
     }
 
@@ -157,4 +148,3 @@ public class FlutterXmppConnectionService extends Service {
         stop();
     }
 }
-

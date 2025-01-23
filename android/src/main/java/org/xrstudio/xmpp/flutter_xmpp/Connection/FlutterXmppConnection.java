@@ -5,8 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
-import androidx.annotation.RequiresApi;
+
 import androidx.core.content.ContextCompat;
+
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.ReconnectionManager;
@@ -60,7 +61,7 @@ import java.util.Set;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-public class      FlutterXmppConnection implements ConnectionListener {
+public class FlutterXmppConnection implements ConnectionListener {
 
     public static String mHost;
     public static String mUsername = "";
@@ -74,7 +75,8 @@ public class      FlutterXmppConnection implements ConnectionListener {
     private static Context mApplicationContext;
     private BroadcastReceiver uiThreadMessageReceiver;//Receives messages from the ui thread.
 
-    public FlutterXmppConnection(Context context, String jid_user, String password, String host, Integer port) {
+    public FlutterXmppConnection(Context context, String jid_user, String password, String host, Integer port, boolean requireSSLConnection,
+                                 boolean autoDeliveryReceipt, boolean useStreamManagement, boolean automaticReconnection) {
 
         Utils.printLog(" Connection Constructor called: ");
 
@@ -82,18 +84,17 @@ public class      FlutterXmppConnection implements ConnectionListener {
         mPassword = password;
         Constants.PORT_NUMBER = port;
         mHost = host;
+        mRequireSSLConnection = requireSSLConnection;
+        mAutoDeliveryReceipt = autoDeliveryReceipt;
+        mUseStreamManagement = useStreamManagement;
+        mAutomaticReconnection = automaticReconnection;
         if (jid_user != null && jid_user.contains(Constants.SYMBOL_COMPARE_JID)) {
             String[] jid_list = jid_user.split(Constants.SYMBOL_COMPARE_JID);
             mUsername = jid_list[0];
-            Utils.printLog(" username is called: ");
-            Utils.printLog(mUsername);
             if (jid_list[1].contains(Constants.SYMBOL_FORWARD_SLASH)) {
                 String[] domain_resource = jid_list[1].split(Constants.SYMBOL_FORWARD_SLASH);
                 mServiceName = domain_resource[0];
                 mResource = domain_resource[1];
-                Utils.printLog(" service name called: ");
-                Utils.printLog(mServiceName);
-                Utils.printLog(mResource);
             } else {
                 mServiceName = jid_list[1];
                 mResource = Constants.ANDROID;
@@ -471,59 +472,95 @@ public class      FlutterXmppConnection implements ConnectionListener {
 
     public void connect() throws IOException, XMPPException, SmackException {
         FlutterXmppConnectionService.sConnectionState = ConnectionState.CONNECTING;
+        XMPPTCPConnectionConfiguration.Builder conf = XMPPTCPConnectionConfiguration.builder();
+        conf.setXmppDomain(mServiceName);
 
-        // Set up SSLContext
-        SSLContext context = null;
-        try {
-            context = SSLContext.getInstance("TLS");
-            context.init(null, new TrustManager[]{new TLSUtils.AcceptAllTrustManager()}, new SecureRandom());
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            e.printStackTrace();
+        // Check if the Host address is the ip then set up host and host address.
+        if (Utils.validIP(mHost)) {
+
+            Utils.printLog(" connecting via ip: " + Utils.validIP(mHost));
+            InetAddress address = InetAddress.getByName(mHost);
+            conf.setHostAddress(address);
+            conf.setHost(mHost);
+        } else {
+
+            Utils.printLog(" not valid host: ");
+            conf.setHost(mHost);
         }
-
-        // Build connection configuration
-        XMPPTCPConnectionConfiguration.Builder confBuilder = XMPPTCPConnectionConfiguration.builder()
-                .setXmppDomain(mServiceName)
-                .setHost(mHost) // Use mHost here
-                .setCustomSSLContext(context)
-                .setKeystoreType(null)
-                .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
-                .setCompressionEnabled(true)
-                .setResource(mResource)
-                .setUsernameAndPassword(mUsername, mPassword);
 
         if (Constants.PORT_NUMBER != 0) {
-            confBuilder.setPort(Constants.PORT_NUMBER);
+            conf.setPort(Constants.PORT_NUMBER);
         }
 
-        try {
-            mConnection = new XMPPTCPConnection(confBuilder.build());
-            mConnection.addConnectionListener(this);
-            Utils.printLog("Connecting to: " + mServiceName + " via host: " + mHost);
+        conf.setUsernameAndPassword(mUsername, mPassword);
+        conf.setResource(mResource);
+        conf.setCompressionEnabled(true);
+        conf.enableDefaultDebugger();
 
-            // Connect and login
+
+        if (mRequireSSLConnection) {
+            SSLContext context = null;
+            try {
+                context = SSLContext.getInstance(Constants.TLS);
+                context.init(null, new TrustManager[]{new TLSUtils.AcceptAllTrustManager()}, new SecureRandom());
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (KeyManagementException e) {
+                e.printStackTrace();
+            }
+            conf.setCustomSSLContext(context);
+            conf.setKeystoreType(null);
+            conf.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
+        } else {
+            conf.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
+        }
+
+        Utils.printLog(" connect 1 mServiceName: " + mServiceName + " mHost: " + mHost + " mPort: " + Constants.PORT + " mUsername: " + mUsername + " mPassword: " + mPassword + " mResource:" + mResource);
+        //Set up the ui thread broadcast message receiver.
+
+
+        try {
+
+            mConnection = new XMPPTCPConnection(conf.build());
+            mConnection.addConnectionListener(this);
+
+
+
+            Utils.printLog(" Calling connect(): ");
             mConnection.connect();
-            mConnection.login();
+
+            rosterConnection = Roster.getInstanceFor(mConnection);
+            rosterConnection.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
 
             if (mUseStreamManagement) {
                 mConnection.setUseStreamManagement(true);
                 mConnection.setUseStreamManagementResumption(true);
             }
 
-            // Set up additional listeners and reconnection
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                setupUiThreadBroadCastMessageReceiver();
+            mConnection.login();
+
+            setupUiThreadBroadCastMessageReceiver();
+
+            mConnection.addSyncStanzaListener(new PresenceListenerAndFilter(mApplicationContext), StanzaTypeFilter.PRESENCE);
+
+            mConnection.addStanzaAcknowledgedListener(new StanzaAckListener(mApplicationContext));
+
+            mConnection.addSyncStanzaListener(new MessageListener(mApplicationContext), StanzaTypeFilter.MESSAGE);
+
+            if (mAutomaticReconnection) {
+                ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(mConnection);
+                ReconnectionManager.setEnabledPerDefault(true);
+                reconnectionManager.enableAutomaticReconnection();
             }
-            ReconnectionManager.getInstanceFor(mConnection).enableAutomaticReconnection();
+
 
         } catch (InterruptedException e) {
             FlutterXmppConnectionService.sConnectionState = ConnectionState.FAILED;
-            Utils.printLog("Connection failed: " + e.toString());
             e.printStackTrace();
         }
+
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void setupUiThreadBroadCastMessageReceiver() {
 
         uiThreadMessageReceiver = new BroadcastReceiver() {
@@ -533,7 +570,6 @@ public class      FlutterXmppConnection implements ConnectionListener {
                 //Check if the Intents purpose is to send the message.
                 String action = intent.getAction();
                 Utils.printLog(" action: " + action);
-                assert action != null;
                 if (action.equals(Constants.X_SEND_MESSAGE)
                         || action.equals(Constants.GROUP_SEND_MESSAGE)) {
                     //Send the message.

@@ -60,7 +60,7 @@ import java.util.Set;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-public class FlutterXmppConnection implements ConnectionListener {
+public class      FlutterXmppConnection implements ConnectionListener {
 
     public static String mHost;
     public static String mUsername = "";
@@ -85,10 +85,15 @@ public class FlutterXmppConnection implements ConnectionListener {
         if (jid_user != null && jid_user.contains(Constants.SYMBOL_COMPARE_JID)) {
             String[] jid_list = jid_user.split(Constants.SYMBOL_COMPARE_JID);
             mUsername = jid_list[0];
+            Utils.printLog(" username is called: ");
+            Utils.printLog(mUsername);
             if (jid_list[1].contains(Constants.SYMBOL_FORWARD_SLASH)) {
                 String[] domain_resource = jid_list[1].split(Constants.SYMBOL_FORWARD_SLASH);
                 mServiceName = domain_resource[0];
                 mResource = domain_resource[1];
+                Utils.printLog(" service name called: ");
+                Utils.printLog(mServiceName);
+                Utils.printLog(mResource);
             } else {
                 mServiceName = jid_list[1];
                 mResource = Constants.ANDROID;

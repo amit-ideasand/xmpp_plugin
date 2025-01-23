@@ -135,7 +135,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                         buildTo.put(Constants.TO, to);
                         buildTo.put(Constants.BODY, bodyTo);
                         buildTo.put(Constants.MSG_TYPE, typeTo);
-                        Log.d("TAG", " OUTGOING_MESSAGE-->> " + build.toString());
+//                        Log.d("TAG", " OUTGOING_MESSAGE-->> " + build.toString());
                         events.success(buildTo);
 
                         break;

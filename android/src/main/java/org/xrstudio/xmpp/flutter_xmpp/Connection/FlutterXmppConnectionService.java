@@ -69,7 +69,8 @@ public class FlutterXmppConnectionService extends Service {
                 Utils.printLog("before if condition");
                 mConnection = new FlutterXmppConnection(this, this.jid_user, this.password, this.host, this.port);
                 Utils.printLog("in if condition");
-            } else {
+            }
+            else {
                 Utils.printLog("no connection found");
             }
 

@@ -1,14 +1,10 @@
 package org.xrstudio.xmpp.flutter_xmpp.Connection;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
-import android.util.Log;
-
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -475,31 +471,18 @@ public class FlutterXmppConnection implements ConnectionListener {
 
     public void connect() throws IOException, XMPPException, SmackException {
         FlutterXmppConnectionService.sConnectionState = ConnectionState.CONNECTING;
-        XMPPTCPConnectionConfiguration conf = XMPPTCPConnectionConfiguration.builder()
-                .setXmppDomain(mServiceName)
-                .setHost(Constants.DOMAIN_NAME)
-                .setResource("FetchAndroid")
-
-                //Was facing this issue
-                //https://discourse.igniterealtime.org/t/connection-with-ssl-fails-with-java-security-keystoreexception-jks-not-found/62566
-                .setCustomSSLContext(context)
-                .setKeystoreType(null)        //This line seems to get rid of the problem
-                .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
-                .setCompressionEnabled(true).build();
-        Log.d(TAG, "Username : "+mUsername);
-        Log.d(TAG, "Password : "+mPassword);
-        Log.d(TAG, "Server : "+mServiceName);
+        XMPPTCPConnectionConfiguration.Builder conf = XMPPTCPConnectionConfiguration.builder();
         conf.setXmppDomain(mServiceName);
         // Check if the Host address is the ip then set up host and host address.
-//        if (Utils.validIP(mHost)) {
+        if (Utils.validIP(mHost)) {
             Utils.printLog(" connecting via ip: " + Utils.validIP(mHost));
             InetAddress address = InetAddress.getByName(mHost);
             conf.setHostAddress(address);
             conf.setHost(mHost);
-//        } else {
-//            Utils.printLog(" not valid host: ");
-//            conf.setHost(mHost);
-//        }
+        } else {
+            Utils.printLog(" not valid host: ");
+            conf.setHost(mHost);
+        }
         if (Constants.PORT_NUMBER != 0) {
             conf.setPort(Constants.PORT_NUMBER);
         }

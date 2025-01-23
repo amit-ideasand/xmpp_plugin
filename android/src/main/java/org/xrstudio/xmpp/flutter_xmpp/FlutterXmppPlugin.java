@@ -477,7 +477,7 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
                 }
 
                 // Start authentication.
-                doLogin();
+                  doLogin();
 
                 result.success(Constants.SUCCESS);
                 break;

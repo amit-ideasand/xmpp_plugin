@@ -8,6 +8,7 @@ public class Constants {
 
     public static final String ZERO = "0";
     public static final String GET_MAM = "request_mam";
+    public static final String DOMAIN_NAME = "alfatest2.fetch,in";
     public static final String GET_TYPING_STATUS = "typing_status";
     public static final String CHANGE_TYPING_STATUS = "change_typing_status";
     public static final String CHANGE_PRESENCE_TYPE = "change_presence_type";

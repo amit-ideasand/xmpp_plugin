@@ -774,19 +774,20 @@ public class FlutterXmppPlugin implements MethodCallHandler, FlutterPlugin, Acti
     // login
     private void doLogin() {
         // Check if the user is already connected or not ? if not then start login process.
-        if (FlutterXmppConnectionService.getState().equals(ConnectionState.DISCONNECTED)) {
-            Intent i = new Intent(activity, FlutterXmppConnectionService.class);
-            i.putExtra(Constants.JID_USER, jid_user);
-            i.putExtra(Constants.PASSWORD, password);
-            i.putExtra(Constants.HOST, host);
-            i.putExtra(Constants.PORT, Constants.PORT_NUMBER);
-            i.putExtra(Constants.AUTO_DELIVERY_RECEIPT, autoDeliveryReceipt);
-            i.putExtra(Constants.REQUIRE_SSL_CONNECTION, requireSSLConnection);
-            i.putExtra(Constants.USER_STREAM_MANAGEMENT, useStreamManagement);
-            i.putExtra(Constants.AUTOMATIC_RECONNECTION, automaticReconnection);
-            activity.startService(i);
+            final ConnectionState connState = FlutterXmppConnectionService.getState();
+            if (connState.equals(ConnectionState.DISCONNECTED) || connState.equals(ConnectionState.FAILED)) {
+                Intent i = new Intent(activity, FlutterXmppConnectionService.class);
+                i.putExtra(Constants.JID_USER, jid_user);
+                i.putExtra(Constants.PASSWORD, password);
+                i.putExtra(Constants.HOST, host);
+                i.putExtra(Constants.PORT, Constants.PORT_NUMBER);
+                i.putExtra(Constants.AUTO_DELIVERY_RECEIPT, autoDeliveryReceipt);
+                i.putExtra(Constants.REQUIRE_SSL_CONNECTION, requireSSLConnection);
+                i.putExtra(Constants.USER_STREAM_MANAGEMENT, useStreamManagement);
+                i.putExtra(Constants.AUTOMATIC_RECONNECTION, automaticReconnection);
+                activity.startService(i);
+            }
         }
-    }
 
     private void logout() {
         // Check if user is connected to xmpp ? if yes then break connection.

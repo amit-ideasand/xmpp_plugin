@@ -337,6 +337,8 @@ public class FlutterXmppConnection implements ConnectionListener {
                 answerForm.setAnswer(Constants.MUC_PERSISTENT_ROOM, true);
                 answerForm.setAnswer(Constants.MUC_MEMBER_ONLY, true);
                 multiUserChat.sendConfigurationForm(answerForm);
+                Utils.printLog("while creating MUC 1: " + form);
+                Utils.printLog("while creating MUC 2: " + answerForm);
             }
 
             isGroupCreatedSuccessfully = true;
